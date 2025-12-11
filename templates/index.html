@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Advanced Password Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* -------------------------------------------------------
+   GLOBAL DEFAULT CSS VARIABLES
+   (Fallbacks before theme selection)
+------------------------------------------------------- */
+:root {
+    --bg: #f4f6f9;
+    --card-bg: #ffffff;
+    --text: #222;
+    --primary: #007bff;
+    --accent: #28a745;
+    --danger: #e74c3c;
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+    --field-bg: #fafafa;
+    --border-color: rgba(120,120,150,0.45);
+}
+
+/* -------------------------------------------------------
+   THEME COLOR DEFINITIONS — ALL UPDATED & FIXED
+------------------------------------------------------- */
+
+/* Minimal Theme */
+body.theme-minimal {
+    --bg: #f4f6f9;
+    --card-bg: #ffffff;
+    --text: #212529;
+    --primary: #007bff;
+    --accent: #28a745;
+    --field-bg: #fafafa;
+    --border-color: rgba(120,120,150,0.45);
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* Neon Cyber */
+body.theme-neon {
+    --bg: #080014;
+    --card-bg: #14002c;
+    --text: #fdf5ff;
+    --primary: #d54dff;
+    --accent: #44ffd7;
+
+    --field-bg: #1f0a3d;
+    --border-color: #5b1fa8;
+    --shadow: 0 0 20px rgba(213,77,255,0.4);
+}
+
+/* Hacker Green */
+body.theme-hacker {
+    --bg: #001006;
+    --card-bg: #00180c;
+    --text: #91ffb1;
+    --primary: #00ff66;
+    --accent: #58ff7d;
+
+    --field-bg: #002413;
+    --border-color: #00ff66aa;
+    --shadow: 0 0 25px rgba(0,255,102,0.25);
+}
+
+/* Midnight Dark */
+body.theme-midnight {
+    --bg: #050608;
+    --card-bg: #141720;
+    --text: #f0f4ff;
+    --primary: #4aa3ff;
+    --accent: #a076ff;
+
+    --field-bg: #1e2230;
+    --border-color: #4aa3ff55;
+    --shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+/* Soft Pastel */
+body.theme-pastel {
+    --bg: #f9fafc;
+    --card-bg: #ffffff;
+    --text: #333333;
+    --primary: #ff7aa2;
+    --accent: #7ad1ff;
+
+    --field-bg: #ffffff;
+    --border-color: rgba(120,120,150,0.35);
+    --shadow: 0 8px 20px rgba(255,122,162,0.35);
+}
+
+/* High Contrast */
+body.theme-highcontrast {
+    --bg: #000000;
+    --card-bg: #000000;
+    --text: #ffffff;
+    --primary: #ffd900;
+    --accent: #00fff2;
+
+    --field-bg: #000000;
+    --border-color: #ffffff;
+    --shadow: none;
+}
+
+
+/* -------------------------------------------------------
+   GLOBAL RESET + PAGE STRUCTURE
+------------------------------------------------------- */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: radial-gradient(circle at top, rgba(255,255,255,0.1), transparent), var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: background 0.4s ease, color 0.3s ease;
+}
+
+
+/* -------------------------------------------------------
+   MAIN CARD CONTAINER
+------------------------------------------------------- */
+.card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px 22px 20px;
+    box-shadow: var(--shadow);
+    animation: float-in 0.5s ease-out;
+}
+
+@keyframes float-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* -------------------------------------------------------
+   HEADER + THEME SELECTOR
+------------------------------------------------------- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+h1 { font-size: 1.25rem; margin: 0; }
+.sub { font-size: 0.78rem; opacity: 0.75; }
+
+
+/* -------------------------------------------------------
+   THEME-AWARE INPUTS & TEXTAREAS
+------------------------------------------------------- */
+select,
+input[type="number"],
+input[type="range"],
+textarea {
+    width: 100%;
+    padding: 8px 9px;
+    border-radius: 8px;
+    background: var(--field-bg);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+    font-size: 0.86rem;
+    transition: 0.25s ease;
+}
+
+select:focus,
+input[type="number"]:focus,
+input[type="range"]:focus,
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary);
+}
+
+
+/* -------------------------------------------------------
+   CHECKBOX ROWS
+------------------------------------------------------- */
+label.row {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    font-size: 0.85rem;
+}
+
+
+/* -------------------------------------------------------
+   PASSWORD OUTPUT AREA
+------------------------------------------------------- */
+.password-output { position: relative; margin-top: 12px; }
+
+#password-output {
+    width: 100%;
+    min-height: 48px;
+    max-height: 140px;
+    padding: 10px 36px 10px 10px;
+    border-radius: 10px;
+    resize: vertical;
+    font-family: "JetBrains Mono", Menlo, monospace;
+}
+
+#password-output.blurred { filter: blur(5px); }
+
+.eye-toggle {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+
+/* -------------------------------------------------------
+   BUTTONS
+------------------------------------------------------- */
+.btn-main,
+.btn-copy {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: 0.25s ease;
+}
+
+.btn-main {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #fff;
+}
+
+.btn-copy {
+    background: rgba(0,0,0,0.05);
+    color: var(--text);
+}
+
+
+/* -------------------------------------------------------
+   STRENGTH BAR
+------------------------------------------------------- */
+.strength-bar {
+    margin-top: 10px;
+    height: 8px;
+    background: rgba(120,120,150,0.25);
+    border-radius: 999px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--danger);
+    transition: 0.3s ease;
+}
+
+
+/* -------------------------------------------------------
+   HISTORY SECTION
+------------------------------------------------------- */
+.history {
+    margin-top: 14px;
+    border-top: 1px solid rgba(120,120,150,0.25);
+    padding-top: 10px;
+}
+
+.history-title { font-size: 0.8rem; opacity: 0.75; }
+
+.history-list {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.history-list li {
+    padding: 4px 0;
+    border-bottom: 1px dashed rgba(120,120,150,0.25);
+    cursor: pointer;
+    font-family: "JetBrains Mono", Menlo, monospace;
+}
+
+.history-list li:hover { opacity: 0.75; }
+
+
+/* -------------------------------------------------------
+   TOAST NOTIFICATION
+------------------------------------------------------- */
+.toast {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    border-radius: 999px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.2s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* -------------------------------------------------------
+   SMALL UI ELEMENTS
+------------------------------------------------------- */
+.top-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 8px;
+}
+
+.tiny-label {
+    font-size: 0.78rem;
+    opacity: 0.75;
+}
+
+</style>
+</head>
+
+<body class="theme-minimal">
+
+<div class="card">
+
+    <div class="card-header">
+        <div>
+            <h1>Password Generator</h1>
+            <div class="sub">Strong, themed and feature-rich</div>
+        </div>
+        <div>
+            <div class="tiny-label">Theme</div>
+            <select id="theme-select">
+                <option value="minimal">Minimal</option>
+                <option value="neon">Neon Cyber</option>
+                <option value="hacker">Hacker Green</option>
+                <option value="midnight">Midnight Dark</option>
+                <option value="pastel">Soft Pastel</option>
+                <option value="highcontrast">High Contrast</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="top-row">
+        <div>
+            <div class="tiny-label">Length <span id="length-value">16</span></div>
+            <input type="range" id="length" min="8" max="128" value="16">
+        </div>
+
+        <div>
+            <div class="tiny-label">How many (1–100)</div>
+            <input type="number" id="count" min="1" max="100" value="1">
+        </div>
+    </div>
+
+    <label class="row">
+        <span>Include uppercase</span>
+        <input type="checkbox" id="uppercase" checked>
+    </label>
+    <label class="row">
+        <span>Include numbers</span>
+        <input type="checkbox" id="numbers" checked>
+    </label>
+    <label class="row">
+        <span>Include special characters</span>
+        <input type="checkbox" id="special" checked>
+    </label>
+    <label class="row">
+        <span>Auto-copy after generate</span>
+        <input type="checkbox" id="autocopy">
+    </label>
+
+    <div class="password-output">
+        <textarea id="password-output" readonly></textarea>
+        <div class="eye-toggle" id="eye-toggle">🙈</div>
+    </div>
+
+    <button class="btn-main" id="generate-btn">⚡ Generate password(s)</button>
+    <button class="btn-copy" id="copy-btn">📋 Copy current output</button>
+
+    <div class="strength-bar">
+        <div class="strength-fill" id="strength-fill"></div>
+    </div>
+
+    <div class="history">
+        <div class="history-title">History (last 10) – click to copy</div>
+        <ul class="history-list" id="history-list"></ul>
+    </div>
+
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+
+<script>
+
+/* -------------------------------------------------------
+   VARIABLE REFERENCES
+------------------------------------------------------- */
+const lengthSlider = document.getElementById("length");
+const lengthValue = document.getElementById("length-value");
+const countInput = document.getElementById("count");
+const upperCb = document.getElementById("uppercase");
+const numbersCb = document.getElementById("numbers");
+const specialCb = document.getElementById("special");
+const autocopyCb = document.getElementById("autocopy");
+const themeSelect = document.getElementById("theme-select");
+const output = document.getElementById("password-output");
+const strengthFill = document.getElementById("strength-fill");
+const toast = document.getElementById("toast");
+const eyeToggle = document.getElementById("eye-toggle");
+const historyList = document.getElementById("history-list");
+
+let history = [];
+const HISTORY_LIMIT = 10;
+let blurred = true;
+
+
+/* -------------------------------------------------------
+   TOAST MESSAGE
+------------------------------------------------------- */
+function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1600);
+}
+
+
+/* -------------------------------------------------------
+   PASSWORD STRENGTH METER
+------------------------------------------------------- */
+function getStrengthScore(password) {
+    let score = 0;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
+}
+
+function applyStrengthVisual(password) {
+    if (!password) {
+        strengthFill.style.width = "0%";
+        return;
+    }
+    const score = getStrengthScore(password);
+    const widths = ["25%", "50%", "75%", "100%"];
+    const colors = ["#e74c3c", "#f1c40f", "#2ecc71", "#00e676"];
+    strengthFill.style.width = widths[score - 1];
+    strengthFill.style.background = colors[score - 1];
+}
+
+
+/* -------------------------------------------------------
+   HISTORY SYSTEM
+------------------------------------------------------- */
+function addToHistory(password) {
+    if (!password) return;
+    const ts = new Date().toLocaleTimeString();
+    history.unshift({ password, ts });
+    if (history.length > HISTORY_LIMIT) history.pop();
+    renderHistory();
+}
+
+function renderHistory() {
+    historyList.innerHTML = "";
+    history.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `[${item.ts}] ${item.password}`;
+        li.addEventListener("click", () => {
+            copyTextToClipboard(item.password);
+            showToast("Copied history item");
+        });
+        historyList.appendChild(li);
+    });
+}
+
+
+/* -------------------------------------------------------
+   COPY HANDLING
+------------------------------------------------------- */
+function copyTextToClipboard(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+    });
+}
+
+
+/* -------------------------------------------------------
+   FETCH PASSWORDS FROM BACKEND
+------------------------------------------------------- */
+async function generatePassword() {
+    const length = +lengthSlider.value;
+    let count = +countInput.value;
+    if (count < 1) count = 1;
+    if (count > 100) count = 100;
+
+    const params = new URLSearchParams({
+        length,
+        upper: upperCb.checked,
+        numbers: numbersCb.checked,
+        special: specialCb.checked,
+        count
+    });
+
+    const res = await fetch(`/api/generate?${params}`);
+    const data = await res.json();
+
+    if (data.error) {
+        output.value = "ERROR: " + data.error;
+        applyStrengthVisual("");
+        return;
+    }
+
+    const pw = data.passwords;
+    if (pw.length === 1) {
+        output.value = pw[0];
+        applyStrengthVisual(pw[0]);
+        addToHistory(pw[0]);
+    } else {
+        output.value = pw.join("\n");
+        applyStrengthVisual(pw[0]);
+        pw.forEach(addToHistory);
+    }
+
+    if (autocopyCb.checked) {
+        copyTextToClipboard(output.value);
+        showToast("Copied automatically");
+    }
+
+    savePrefs();
+}
+
+
+/* -------------------------------------------------------
+   BLUR / SHOW PASSWORD
+------------------------------------------------------- */
+function toggleBlur() {
+    blurred = !blurred;
+    output.classList.toggle("blurred", blurred);
+    eyeToggle.textContent = blurred ? "🙈" : "👀";
+}
+
+
+/* -------------------------------------------------------
+   USER PREFERENCES (COOKIES)
+------------------------------------------------------- */
+function savePrefs() {
+    const prefs = {
+        length: lengthSlider.value,
+        count: countInput.value,
+        upper: upperCb.checked,
+        numbers: numbersCb.checked,
+        special: specialCb.checked,
+        autocopy: autocopyCb.checked,
+        theme: themeSelect.value,
+    };
+    document.cookie = "pg_prefs=" + encodeURIComponent(JSON.stringify(prefs)) + ";path=/;max-age=31536000";
+}
+
+function loadPrefs() {
+    const match = document.cookie.split("; ").find(c => c.startsWith("pg_prefs="));
+    if (!match) return;
+
+    try {
+        const prefs = JSON.parse(decodeURIComponent(match.split("=")[1]));
+
+        lengthSlider.value = prefs.length;
+        lengthValue.textContent = prefs.length;
+
+        countInput.value = prefs.count;
+        upperCb.checked = prefs.upper;
+        numbersCb.checked = prefs.numbers;
+        specialCb.checked = prefs.special;
+        autocopyCb.checked = prefs.autocopy;
+
+        themeSelect.value = prefs.theme;
+        document.body.className = "theme-" + prefs.theme;
+    } catch (e) {
+        console.warn("Failed to parse prefs cookie", e);
+    }
+}
+
+
+/* -------------------------------------------------------
+   EVENT LISTENERS
+------------------------------------------------------- */
+lengthSlider.addEventListener("input", () => {
+    lengthValue.textContent = lengthSlider.value;
+    savePrefs();
+});
+
+document.getElementById("generate-btn").addEventListener("click", generatePassword);
+
+document.getElementById("copy-btn").addEventListener("click", () => {
+    copyTextToClipboard(output.value);
+    showToast("Copied output");
+});
+
+themeSelect.addEventListener("change", () => {
+    document.body.className = "theme-" + themeSelect.value;
+    savePrefs();
+});
+
+eyeToggle.addEventListener("click", toggleBlur);
+
+[countInput, upperCb, numbersCb, specialCb, autocopyCb]
+    .forEach(el => el.addEventListener("change", savePrefs));
+
+
+/* -------------------------------------------------------
+   INITIALIZATION
+------------------------------------------------------- */
+output.classList.add("blurred");
+loadPrefs();
+lengthValue.textContent = lengthSlider.value;
+
+</script>
+</body>
+</html>
