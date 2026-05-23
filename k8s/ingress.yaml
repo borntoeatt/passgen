@@ -3,16 +3,15 @@ kind: Ingress
 metadata:
   name: passgen
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    cert-manager.io/cluster-issuer: valhalla-ca-issuer
+    # Mirror the code-poets-society / beleganski-jaas pattern:
+    # NPM is the public edge (TLS termination + Let's Encrypt for
+    # passgen.dporkov.tech). Traefik is the internal router only —
+    # it accepts plain HTTP from NPM and matches by Host header.
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - passgen.valhalla.lan
-      secretName: passgen-tls
   rules:
-    - host: passgen.valhalla.lan
+    - host: passgen.dporkov.tech
       http:
         paths:
           - path: /
