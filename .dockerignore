@@ -1,0 +1,11 @@
+.git
+.gitignore
+.DS_Store
+k8s/
+README*
+*.md
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/

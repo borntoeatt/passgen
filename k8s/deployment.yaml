@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passgen
+  labels:
+    app: passgen
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: passgen
+  template:
+    metadata:
+      labels:
+        app: passgen
+    spec:
+      # Keep workloads off the tainted control-plane servers.
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+      containers:
+        - name: passgen
+          image: dporkov/passgen:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          # /api/stats is a cheap GET that returns JSON counters — perfect for probes.
+          livenessProbe:
+            httpGet:
+              path: /api/stats
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/stats
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 3

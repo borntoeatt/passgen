@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: passgen
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: valhalla-ca-issuer
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - passgen.valhalla.lan
+      secretName: passgen-tls
+  rules:
+    - host: passgen.valhalla.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: passgen
+                port:
+                  name: http
