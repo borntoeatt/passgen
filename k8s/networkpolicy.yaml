@@ -1,13 +1,3 @@
-# The app is public (Cloudflare -> Nginx Proxy Manager -> Traefik -> these
-# pods), so a bug in it must not reach the rest of the cluster or the LAN.
-# In: only Traefik. Out: nothing. Enforced by k3s' built-in policy controller
-# (kube-router); kubelet probes come from the pod's own node and are not
-# affected.
-#
-# The app is Flask under gunicorn with no outbound calls (requirements.txt is
-# Flask and gunicorn; app.py imports no HTTP client), so there is no egress
-# rule, not even DNS. If the app ever starts calling something, add the rule
-# here in the same PR.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -20,7 +10,6 @@ spec:
       app: passgen
   policyTypes: ["Ingress", "Egress"]
   ingress:
-    # Traefik, for passgen.dporkov.tech (ingress.yaml).
     - from:
         - namespaceSelector:
             matchLabels:
@@ -31,5 +20,4 @@ spec:
       ports:
         - protocol: TCP
           port: 8080
-  # No rule: all egress is denied.
   egress: []
